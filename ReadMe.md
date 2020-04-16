@@ -1,4 +1,4 @@
-# how to run the prohject and check output
+# how to run the project and check output
 
 
 # url at which the project is deployed and can be accessed
