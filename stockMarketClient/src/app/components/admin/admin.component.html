@@ -1,0 +1,20 @@
+<nav class="nav nav-tabs bg-dark fixed-top">
+    <li class="nav-item">
+      <a class="nav-link nav-font" id="nav-home-tab" data-toggle="dropdown" [routerLink]="['/admin/uploadxls']" routerLinkActive="router-link-active"  role="tab">Import Data</a>
+      <div class="dropdown-menu sr-only"></div>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link nav-font" id="nav-profile-tab" data-toggle="dropdown" [routerLink]="['/admin/companyinfo']" routerLinkActive="router-link-active" role="tab">Manage Company</a>
+      <div class="dropdown-menu sr-only"></div>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link nav-font" id="nav-contact-tab" data-toggle="dropdown" [routerLink]="['/admin/stockExchange']" routerLinkActive="router-link-active" role="tab">Manage Exchange</a>
+      <div class="dropdown-menu sr-only"></div>
+    <li class="nav-item">
+      <a class="nav-link nav-font" id="nav-profile-tab" data-toggle="dropdown" [routerLink]="['/admin/updateipos']" routerLinkActive="router-link-active" role="tab">Update IPO details</a>
+      <div class="dropdown-menu sr-only"></div>
+    </li>
+</nav>
+<div class="container">
+    <router-outlet></router-outlet>
+</div>

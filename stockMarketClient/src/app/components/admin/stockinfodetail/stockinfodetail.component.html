@@ -1,0 +1,26 @@
+<div class="center-vertical">
+    <table class="table table-striped">
+        <caption><h2>List of Stock Related Data</h2></caption>
+        <thead>
+            <tr class="bg-info text-light">
+                <th>Stock Code</th>
+                <th>Stock Exchange</th>
+                <th>Current Price</th>
+                <th>Date</th>
+                <th>time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of stockData">
+                <td>{{item.stockCode}}</td>
+                <td>{{item.stockExchange}}</td>
+                <td>{{item.currentPrice | currency: 'CNY':'symbol-narrow'}}</td>
+                <td>{{item.date}}</td>
+                <td>{{item.time}}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr><td colspan="5" class="text-right"><input type="button" class="btn btn-info" (click)="backtoEdit()" value="Back" ></td></tr>
+        </tfoot>
+    </table>
+</div>

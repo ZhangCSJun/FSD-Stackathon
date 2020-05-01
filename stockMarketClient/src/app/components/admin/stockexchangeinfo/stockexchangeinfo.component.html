@@ -1,0 +1,51 @@
+<div class="center-vertical">
+    <table class="table table-striped table-middle">
+        <caption><h2>Stock Exchange Info</h2></caption>
+        <tbody>
+            <tr>
+                <td class="td-width-weight">Stock Exchange Id<span class="glyphicon glyphicon-triangle-bottom"></span></td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="stockEx.id">
+                    <span class="text-danger" *ngIf="validMsg.id !==''">{{validMsg.id}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Stock Exchange Abbreviation</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="stockEx.abbrname">
+                    <span class="text-danger" *ngIf="validMsg.abbr !==''">{{validMsg.abbr}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Stock Exchange Full Name</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="stockEx.fullname">
+                    <span class="text-danger" *ngIf="validMsg.fullname !==''">{{validMsg.fullname}}</span>
+                </td>
+                
+            </tr>
+            <tr>
+                <td>Brief</td>
+                <td><input class="form-control" type="text" [(ngModel)]="stockEx.brief"></td>
+            </tr>
+            <tr>
+                <td>Contact Address</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="stockEx.contactAddress">
+                    <span class="text-danger" *ngIf="validMsg.addr !==''">{{validMsg.addr}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Remark</td>
+                <td><input class="form-control" type="text" [(ngModel)]="stockEx.remark"></td>
+            </tr>
+            <tr class="bg-white text-light">
+                <td colspan="2" class="text-right">
+                    <a *ngIf="pageStatus=='0'" class="btn btn-info text-white" (click)="saveStockExInfo()">Save</a>
+                    &nbsp;&nbsp;
+                    <a class="btn btn-info" [routerLink]="['/admin/stockExchange']" routerLinkActive="router-link-active">back</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
