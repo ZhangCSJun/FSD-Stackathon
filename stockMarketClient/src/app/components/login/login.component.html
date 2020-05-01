@@ -1,0 +1,31 @@
+<div class="container center-vertical bg-light">
+    <h2 class="text-center title">Stock Market Charting v5.0</h2>
+    <div class="row offset-2">
+        <table class="table table-middle">
+            <tr>
+                <td class="td-weight-half"><img class="img-width img-response" src="../../../assets/pic/timg.jpg"></td>
+                <td class="td-weight-half"> 
+                    <form name="loginform" class="form-horizontal" rol="form" #loginForm="ngForm" (ngSubmit)="login(loginForm.value)">
+                        <div class="form-group">
+                            <span class="alert-danger text-danger form-control" *ngIf="validMsg.loginFail !==''">{{validMsg.loginFail}}</span>
+                            <label for="username">Username</label>
+                            <input [(ngModel)]="username" id="username" name="username" class="form-control" type="text">
+                            <span class="alert-danger text-danger form-control" *ngIf="validMsg.username !==''">{{validMsg.username}}</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="pwd">Password</label>
+                            <input [(ngModel)]="password" id="pwd" name="pwd" class="form-control" type="password">
+                            <span class="alert-danger text-danger form-control" *ngIf="validMsg.password !==''">{{validMsg.password}}</span>
+                        </div>
+                        <div class="form-group">
+                            <input id="signin" class="btn btn-success form-control" type="submit" value="Sign in">
+                        </div>
+                    </form>
+                    <div class="text-center">
+                        <b>New to StockMarket?</b><a [routerLink]="['/user/signup']" routerLinkActive="router-link-active">Creat an account</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
