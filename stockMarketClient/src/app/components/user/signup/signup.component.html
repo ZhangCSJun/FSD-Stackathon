@@ -1,0 +1,31 @@
+<div class="row table-bordered bg-light center-vertical">
+  <div class="col-md-4 offset-md-4">
+      <form role="form" #myForm="ngForm" (ngSubmit)="onSubmit(myForm.value)">
+          <div id="fail" class="alertInit alert alert-danger" contenteditable="true" [textContent]="alertMsg.username" (input)="alertMsg.username=$event.target.textContent">{{alertMsg.username}}</div>
+          <div id="successInfo" class="alertInit alert alert-success" contenteditable="true" [textContent]="alertMsg.username" (input)="alertMsg.username=$event.target.textContent">{{alertMsg.username}}</div>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input id="username" name="username" class="form-control" type="text" [(ngModel)]="signup.username" (blur)="validForm($event)">
+        </div>
+          <div id="alertMobile" class="alertInit alert alert-danger" contenteditable="true" [textContent]="alertMsg.mobilenumber" (input)="alertMsg.mobilenumber=$event.target.textContent">{{alertMsg.alertMobile}}</div>
+          <div class="form-group">
+              <label for="mobilenumber">Moblie Number</label>
+              <input id="mobilenumber" name="mobilenumber" class="form-control" type="text" [(ngModel)]="signup.mobilenumber" (blur)="validForm($event)">
+          </div>
+          <div id="alertEmail" class="alertInit alert alert-danger" contenteditable="true" [textContent]="alertMsg.email" (input)="alertMsg.email=$event.target.textContent">{{alertMsg.alertEmail}}</div>
+          <div class="form-group">
+              <label for="email">Email Address</label>
+              <input id="email" name="email" class="form-control" type="password" [(ngModel)]="signup.email" (blur)="validForm($event)">
+          </div>
+          <div id="alertpwd" class="alertInit alert alert-danger" contenteditable="true" [textContent]="alertMsg.pwd" (input)="alertMsg.pwd=$event.target.textContent">{{alertMsg.pwd}}</div>
+          <div class="form-group">
+              <label for="pwd">Password</label>
+              <input id="pwd" name="pwd" class="form-control" type="password" [(ngModel)]="signup.pwd" (blur)="validForm($event)" >
+              <label class="text-left small">{{pwdtip}}</label>
+          </div>
+          <div class="form-group">
+              <input type="submit" disabled="disabled" class="btn btn-success form-control" id="submit" value="Sign Up">
+          </div>
+      </form>
+  </div>
+</div>

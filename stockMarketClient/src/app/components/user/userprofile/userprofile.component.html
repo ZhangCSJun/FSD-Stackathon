@@ -1,0 +1,28 @@
+<div class="center-vertical">
+    <table class="table table-bordered">
+        <caption><h5>User Profile</h5></caption>
+        <tbody>
+            <tr>
+                <td class="bg-light">Picture</td>
+                <td><img class="img-responsive" src="../../../../assets/pic/user.jpg"></td>
+            </tr>
+            <tr>
+                <td>User Name</td>
+                <td><span *ngIf="userProfile.userName !=undefined">{{userProfile.userName}}</span></td>
+            </tr>
+            <tr>
+                <td class="bg-light">Mobile Number</td>
+                <td><span *ngIf="userProfile.mobileNumber !=undefined">{{userProfile.mobileNumber}}</span></td>
+            </tr>
+            <tr>
+                <td>E-mail</td>
+                <td><span *ngIf="userProfile.email !=undefined">{{userProfile.email}}</span></td>
+            </tr>
+    
+            <tr>
+                <td class="bg-light">Password</td>
+                <td><a class="btn btn-primary" [routerLink]="['/user/changePwd']">update</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

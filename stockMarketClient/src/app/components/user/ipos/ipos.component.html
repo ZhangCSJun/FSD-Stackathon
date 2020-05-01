@@ -1,0 +1,42 @@
+<div class="center-vertical">
+    <table class="table-default">
+        <tr>
+            <td>
+                <div class="input-group text-right">
+                    <input id="company" size="60" type="text" (keyup)="getCompanyNameList()" placeholder="input company's Name or company's code">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary dropdown-toggle" (click)="getIposData()">Search</button>
+                    </span>
+                </div>
+                <div id="companyList" class="dropDown-scroll" *ngIf="isDisplay">
+                    <a class="dropdown-item" *ngFor="let item of companyNameList" [attr.companyCode]="item.companyCode" [attr.companyName]="item.companyName" (click)="selectCompany($event)">{{item.companyName}}</a>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div>
+        <h2 class="text-left">List of IPOS</h2>
+    </div>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr class="bg-info text-light">
+                <th>Company Name</th>
+                <th>Stock Exchange</th>
+                <th>Price per share</th>
+                <th>Total number of Shares</th>
+                <th>Open Date Time<span class="glyphicon glyphicon-triangle-bottom"></span></th>
+                <th>Remark</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of iposData">
+                <td>{{item.companyName}}</td>
+                <td>{{item.stockExchange}}</td>
+                <td>{{item.pricePerShare}}</td>
+                <td>{{item.totalNumberOfShares}}</td>
+                <td>{{item.openDateTime}}</td>
+                <td>{{item.remark}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
