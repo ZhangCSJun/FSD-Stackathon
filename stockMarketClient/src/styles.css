@@ -1,0 +1,33 @@
+/* You can add global styles to this file, and also import other style files */
+
+.nav-font{
+    font-family: 'Times New Roman', Times, serif;
+    color:white;
+    font-size: larger;
+}
+
+.center-vertical{
+    position: relative;
+    transform: translateY(100px);
+}
+
+caption
+{
+    caption-side:top;
+}
+
+.dropDown-scroll{
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: stretch;
+    align-items: stretch;
+    height:100px;
+    width:83%;
+    border:1px solid #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    overflow-x: hidden;
+    overflow-y: show;
+}
