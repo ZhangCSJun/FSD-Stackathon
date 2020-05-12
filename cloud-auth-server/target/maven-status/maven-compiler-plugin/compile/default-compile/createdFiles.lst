@@ -1,0 +1,4 @@
+cn\zj\cloud\auth\dao\UserDao.class
+cn\zj\cloud\auth\repository\UserRepository.class
+cn\zj\cloud\auth\CloudAuthServerApplication.class
+cn\zj\cloud\auth\model\User.class
