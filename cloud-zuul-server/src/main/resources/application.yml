@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: gateway
+server:
+  port: 9001
+ribbon:
+  eureka:
+    enable: false
+  ReadTimeout: 30000
+  ConnectionTimeout: 30000
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
+    fetchRegistry: true
+    registerWithEureka: true
+zuul:
+  routes:
+    client: /myClient/**
+  ignored-patterns:
+    -/client/**
