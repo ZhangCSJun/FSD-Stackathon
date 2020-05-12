@@ -1,1 +1,6 @@
 
+cloud-admin-server
+cloud-user-server
+cloud-auth-server
+cloud-zuul-server
+cloud-eureka-server
