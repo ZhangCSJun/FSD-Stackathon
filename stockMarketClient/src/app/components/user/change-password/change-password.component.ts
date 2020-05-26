@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RequestService } from '../../../services/request.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import * as $ from 'jquery';
 
 @Component({
@@ -9,6 +9,7 @@ import * as $ from 'jquery';
   styleUrls: ['./change-password.component.scss']
 })
 export class ChangePasswordComponent implements OnInit {
+  public userId:string;
 
   // valid message
   public alertMsg:any={
@@ -28,27 +29,43 @@ export class ChangePasswordComponent implements OnInit {
   public pwdtip:string="Make sure it's at least 15 character OR at least 8 character" +
   " including a number and a lowercase letter";
 
-  constructor(private reqService:RequestService, private router:Router) { }
+  constructor(private reqService:RequestService, private router:Router, private routerinfo:ActivatedRoute ) { }
 
   ngOnInit(): void {
+    this.routerinfo.queryParams.subscribe(queryParam=>{
+      this.userId = queryParam.userId;
+      console.log(this.userId);
+    });
   }
 
   onSubmit(value:any){
 
+    this.alertMsg.oldpwd = "";
+    this.alertMsg.successInfo = "";
+
+    let updatePwdInfo = {
+      id: this.userId,
+      oldPwd: value.oldpwd,
+      newPwd: value.newpwd
+    }
     // dummy
-    console.log(JSON.stringify(value));
-    this.reqService.doUpdatePwd(value).subscribe((response:any)=>{
-      if(200 === response.code){
+    console.log(JSON.stringify(updatePwdInfo));
+    this.reqService.doUpdatePwd(updatePwdInfo).subscribe((response:any)=>{
+      console.log(response);
+      if(200 === response.body.status && "001" === response.body.code){
+        $("#alertOldpwd").removeClass("alert-danger").addClass("alert-success");
         this.alertMsg.oldpwd = "update password success";
         $('#successInfo').show();
         setTimeout(()=>{
-          this.router.navigate(['user/profile']);
+          this.router.navigate(['user/profile'],{queryParams: {userId: this.userId}});
         },2000);
         
       } else {
         this.alertMsg.oldpwd = "old password error";
         $('#alertOldpwd').show();
       }
+    }, (error:any)=>{
+      console.log(error);
     })
   }
 

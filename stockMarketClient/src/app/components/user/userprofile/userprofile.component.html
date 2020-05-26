@@ -21,7 +21,7 @@
     
             <tr>
                 <td class="bg-light">Password</td>
-                <td><a class="btn btn-primary" [routerLink]="['/user/changePwd']">update</a></td>
+                <td><a class="btn btn-primary" [routerLink]="['/user/changePwd']" [queryParams]="{userId: userProfile.userId}">update</a></td>
             </tr>
         </tbody>
     </table>

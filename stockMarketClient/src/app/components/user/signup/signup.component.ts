@@ -23,10 +23,10 @@ export class SignupComponent implements OnInit {
     " including a number and a lowercase letter";
 
     public signup:any={
-      username:"",
-      mobilenumber:"",
+      userName:"",
+      mobileNumber:"",
       email:"",
-      password:""
+      passWord:""
     }
   constructor(private reqService:RequestService, private router:Router) { }
 
@@ -38,15 +38,16 @@ export class SignupComponent implements OnInit {
       // dummy
       console.log(JSON.stringify(value));
       this.reqService.doSignUp(value).subscribe((response:any)=>{
-        if(200 === response.code){
-          this.alertMsg.oldpwd = "signup success";
-          $('#successInfo').show();
+        if(200 === response.body.status && "001" === response.body.code){
+          $("#fail").removeClass("alert-danger").addClass("alert-success");
+          this.alertMsg.username = "signup success";
+          $('#fail').show();
           setTimeout(()=>{
-            this.router.navigate(['user/profile']);
+            this.router.navigate(['/login']);
           },2000);
           
         } else {
-          this.alertMsg.oldpwd = "input error please check";
+          this.alertMsg.username = "input error please check";
           $('#fail').show();
         }
       })
@@ -62,11 +63,11 @@ export class SignupComponent implements OnInit {
       let pwdReg4:any = /[a-z]/;
       let regResult = false;
 
-      if(pwdReg.test(this.signup.password)){
+      if(pwdReg.test(this.signup.passWord)){
         regResult = true;
-      } else if(pwdReg2.test(this.signup.password) &&
-                pwdReg3.test(this.signup.password) &&
-                pwdReg4.test(this.signup.password)){
+      } else if(pwdReg2.test(this.signup.passWord) &&
+                pwdReg3.test(this.signup.passWord) &&
+                pwdReg4.test(this.signup.passWord)){
          regResult = true;
       }
 
@@ -79,7 +80,7 @@ export class SignupComponent implements OnInit {
       }
     }
     if(srEle.id == "username"){
-      if(this.signup.username ==""){
+      if(this.signup.userName ==""){
         this.alertMsg.username = "username must be input";
         $('#fail').show();
       } else {
@@ -89,7 +90,7 @@ export class SignupComponent implements OnInit {
     }
 
     if(srEle.id == "mobilenumber"){
-      if(this.signup.mobilenumber==""){
+      if(this.signup.mobileNumber==""){
         this.alertMsg.mobilenumber = "mobilenumber must be input";
         $('#alertMobile').show();
       } else {

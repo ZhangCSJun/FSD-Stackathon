@@ -9,7 +9,7 @@
                     </span>
                 </div>
                 <div id="companyList" class="dropDown-scroll" *ngIf="isDisplay">
-                    <a class="dropdown-item" *ngFor="let item of companyNameList" [attr.companyCode]="item.companyCode" [attr.companyName]="item.companyName" (click)="selectCompany($event)">{{item.companyName}}</a>
+                    <a class="dropdown-item" *ngFor="let item of companyNameList" [attr.companyCode]="item.code" [attr.companyName]="item.name" (click)="selectCompany($event)">{{item.name}}</a>
                 </div>
             </td>
         </tr>
