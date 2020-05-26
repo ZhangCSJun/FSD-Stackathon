@@ -21,13 +21,13 @@ export class EditocomponayinfoComponent implements OnInit {
     if(this.pageStatus=="1"){
       let objMap = this.activatedRoute.snapshot.queryParamMap;
       this.company = new Company(
-        objMap.get('companyName'), 
-        objMap.get('companyCode'), 
+        objMap.get('name'), 
+        objMap.get('code'), 
         objMap.get('turnover'), 
-        objMap.get('CEO'),
-        objMap.get('BOD'),
-        objMap.get('sector'), 
-        objMap.get('breifwrite'), 
+        objMap.get('ceo'),
+        objMap.get('boardofdirectors'),
+        objMap.get('sectorid'), 
+        objMap.get('briefwriteup'), 
         objMap.get('status'), );
       console.log(this.company);
     } else {

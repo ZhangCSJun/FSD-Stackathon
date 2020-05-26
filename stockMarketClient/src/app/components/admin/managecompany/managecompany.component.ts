@@ -16,8 +16,6 @@ export class ManagecompanyComponent implements OnInit {
 
   public companyNameList:any;
 
-  public dropDownItem:string = "";
-
   public searchCode:string = "";
 
   constructor(private reqService:RequestService,  private router:Router ) { }
@@ -31,12 +29,29 @@ export class ManagecompanyComponent implements OnInit {
       or company code, display matching company names
     */ 
     if($('#company').val().length>=2){
+      // let keyword:string = $('#company').val();
+      // // get company names by using ajax
+      // this.reqService.getCompanyNameByKeyword(keyword).subscribe((response)=>{
+      //   this.companyNameList = response;
+      // })
+      // this.isDisplay = true;
+
+
       let keyword:string = $('#company').val();
       // get company names by using ajax
-      this.reqService.getCompanyNameByKeyword(keyword).subscribe((response)=>{
-        this.companyNameList = response;
+      this.reqService.getCompanyNameByKeyword(keyword).subscribe((response:any)=>{
+        console.log(response);
+        if(response.body.status == 200 && response.body.code === "001"){
+          this.companyNameList = response.body.business.data;
+          console.log(this.companyNameList);
+          this.isDisplay = true;
+        } else {
+          this.isDisplay = false;
+        }
+      }, (error:any)=>{
+        console.log(error);
       })
-      this.isDisplay = true;
+      
     }
   }
 
@@ -61,18 +76,26 @@ export class ManagecompanyComponent implements OnInit {
     // get companylist by specified company code
     if(this.searchCode!==""){
       $('#company').val('');
-      this.reqService.getCompanyInfoByCode(this.searchCode).subscribe((response:any)=>{
+      this.reqService.getCompanyInfoByKeyword(this.searchCode).subscribe((response:any)=>{
         console.log(response);
-        this.companyInfo = response
+        this.companyInfo = response.body.business.data;
       })
       this.searchCode =""
      // when user input keyword into text, get companylist by key word
     } else {
       let keyword:string =  $('#company').val();
-      this.reqService.getCompanyInfoByKeyword(keyword).subscribe((response:any)=>{
-        console.log(response);
-        this.companyInfo = response
-      })
+      if(keyword == ""){
+        this.reqService.getCompaniesInfo().subscribe((response:any)=>{
+          console.log(response);
+          this.companyInfo = response.body.business.data;
+        })
+      } else {
+        this.reqService.getCompanyInfoByKeyword(keyword).subscribe((response:any)=>{
+          console.log(response);
+          this.companyInfo = response.body.business.data;
+        })
+      }
+
     }
 
   }

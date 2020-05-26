@@ -153,4 +153,12 @@ export class ImportdataComponent implements OnInit {
     }
     return dataCheckResult;
   }
+
+  downloadTemplate(){
+    this.reqService.downloadTemplate().subscribe((response:any)=>{
+      console.log(response);
+    },(error:any)=>{
+      console.log(error);
+    });
+  }
 }
