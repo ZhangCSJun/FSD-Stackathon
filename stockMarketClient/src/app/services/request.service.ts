@@ -2,41 +2,45 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
-const httpOptions={
-  headers: new HttpHeaders({'Content-Type':'application/json'})
+const httpOptions:any={
+  headers: new HttpHeaders({'Content-Type':'application/json', 'tkn':`${localStorage.getItem('token')}`}),
+  observe: 'response' // able to get full response include header
 };
-
 
 @Injectable({
   providedIn: 'root'
 })
 export class RequestService {
 
-  // Server domain URL
+  // API Server URL
   private baseUrl:string = environment.baseUrl;
 
   public data:Array<any>;
 
   constructor(private http:HttpClient) { }
 
-  doSignUp(form:any){
-    return this.http.post(`${environment.baseUrl}/login`, JSON.stringify(form), httpOptions);
-  }
-
+  // User login
   doSignIn(form:any){
     return this.http.post(`${this.baseUrl}/login`, JSON.stringify(form), httpOptions);
   }
 
-  doUpdatePwd(pwdInfo){
-    return this.http.post(`${environment.baseUrl}/login`, JSON.stringify(pwdInfo), httpOptions);
+  // User Register
+  doSignUp(form:any){
+    console.log(JSON.stringify(form));
+    return this.http.post(`${environment.baseUrl}/user`, JSON.stringify(form), httpOptions);
   }
 
-  getUserProfile(){
-    return this.http.get(`${this.baseUrl}/userprofile`, httpOptions);
+
+  doUpdatePwd(pwdInfo){
+    return this.http.put(`${environment.baseUrl}/user`, JSON.stringify(pwdInfo), httpOptions);
+  }
+
+  getUserProfile(id:string){
+    return this.http.get(`${this.baseUrl}/user/${id}`, httpOptions);
   }
 
   getCompanyNameByKeyword(str:string){
-    return this.http.get(`${this.baseUrl}/getCompanyNameByKeyword`, {params:{keyword:`${str}`}});
+    return this.http.get(`${this.baseUrl}/company/ajax/${str}`, httpOptions);
   }
 
   getIposDataByCode(code:string){
@@ -44,12 +48,15 @@ export class RequestService {
   }
 
   getIposDataByKeyword(keyword:string){
-    return this.http.get(`${this.baseUrl}/getIposDataByKeyword`, {params:{keyword:`${keyword}`}});
+    return this.http.get(`${this.baseUrl}/ipodetail/${keyword}`, httpOptions);
   }
 
+  getCompaniesInfo(){
+    return this.http.get(`${this.baseUrl}/company`,  httpOptions);
+  }
 
   getCompanyInfoByKeyword(keyword:string){
-    return this.http.get(`${this.baseUrl}/getCompanyInfoByKeyword`, {params:{keyword:`${keyword}`}});
+    return this.http.get(`${this.baseUrl}/company/ajax/${keyword}`,  httpOptions);
   }
 
   getCompanyInfoByCode(code:string){
@@ -124,4 +131,7 @@ export class RequestService {
     return this.http.post(`${this.baseUrl}/getDataSet`, JSON.stringify(data), httpOptions);
   }
 
+  downloadTemplate(){
+    return this.http.get(`${this.baseUrl}/template/download`, httpOptions);
+  }
 }
