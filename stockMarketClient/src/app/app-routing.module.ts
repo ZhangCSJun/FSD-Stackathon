@@ -22,12 +22,11 @@ import { ChartsComparisonComponent } from './components/user/charts-comparison/c
 import { AuthGuard } from './security/AuthGuard';
 
 const routes: Routes = [
- {
-  path:"login",component:LoginComponent,
- },
+ {path:"login",component:LoginComponent,},
+ {path:'signup',component:SignupComponent},
  {path:"admin", component:AdminComponent,
   children:[
-    {path:'uploadxls',component:ImportdataComponent, canActivate:[AuthGuard],},
+    {path:'uploadxls',component:ImportdataComponent,},
     {path:'companyinfo',component:ManagecompanyComponent},
     {path:'edit/:status',component:EditocomponayinfoComponent},
     {path:'stockDeatil',component:StockinfodetailComponent},
@@ -39,12 +38,11 @@ const routes: Routes = [
 },
 {path:"user",component:UserComponent,
   children:[
-    {path:'signup',component:SignupComponent},
     {path:'profile',component:UserprofileComponent},
     {path:'changePwd',component:ChangePasswordComponent},
     {path:'ipos',component:IposComponent},
     {path:'charts',component:ChartsComparisonComponent}
-  ]
+  ], canActivate:[AuthGuard],
 },
 {
   path: '**', redirectTo: '/login', pathMatch: 'full'
