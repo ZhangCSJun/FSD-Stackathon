@@ -1,4 +1,5 @@
 export class User {
+    private _userId;
     private _userName;
     private _password;
     private _userType;
@@ -6,6 +7,12 @@ export class User {
     private _mobileNumber;
     private _confirmed;
 
+    get userId():string{
+        return this._userId;
+    }
+    set userId(userId:string){
+        this._userId = userId;
+    }
     get userName():string{
         return this._userName;
     }
