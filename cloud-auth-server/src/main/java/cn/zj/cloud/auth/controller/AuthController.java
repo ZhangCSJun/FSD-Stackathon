@@ -13,7 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import cn.zj.cloud.auth.model.AuthInfo;
 import cn.zj.cloud.auth.service.AuthService;
+import cn.zj.cloud.constant.Constant;
+import cn.zj.cloud.model.Response;
+import cn.zj.cloud.util.StringUtil;
 
 @RestController
 public class AuthController {
@@ -22,16 +26,25 @@ public class AuthController {
 	private AuthService auth;
 	
 	@PostMapping("/token")
-	public ResponseEntity issueToken(@RequestBody Map<String, String>requestBody) {
-		String userId = requestBody.get("userid");
-		String token = auth.issueToken(userId);
-		return ResponseEntity.status(HttpStatus.OK).header("tkn", token).build();
+	public ResponseEntity<Response> issueToken(@RequestBody AuthInfo request) {
+		String userId = request.getUserId();
+		Response response = auth.issueToken(userId);
+
+		if(!StringUtil.isNull(response.getBusiness()) && 
+				response.getBusiness().containsKey(Constant.BUSINESS_DATA_TOKEN) &&
+				!StringUtil.isNullOrEmpty(response.getBusiness().get(Constant.BUSINESS_DATA_TOKEN).toString())) {
+			String token = response.getBusiness().get(Constant.BUSINESS_DATA_TOKEN).toString();
+			return ResponseEntity.status(response.getStatus()).header("tkn", token).build();
+		} else {
+			return ResponseEntity.status(response.getStatus()).body(response);
+		}
+		
 	}
 	
 	@GetMapping("/token")
-	public ResponseEntity<Map<String, Object>> verify(@RequestHeader("tkn") String token) {
-		Map<String, Object> responseBody = auth.verify(token);
-		return ResponseEntity.status(HttpStatus.OK).header("tkn", token).body(responseBody);
+	public ResponseEntity<Response> verify(@RequestHeader("tkn") String token) {
+		Response response = auth.verify(token);
+		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 	
 

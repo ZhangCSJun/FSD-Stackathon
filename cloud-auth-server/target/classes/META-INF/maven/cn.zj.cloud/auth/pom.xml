@@ -49,6 +49,13 @@
 			<artifactId>java-jwt</artifactId>
 			<version>3.4.0</version>
 		</dependency>
+		<!-- customize common -->
+		<dependency>
+		    <groupId>cloud-common</groupId>
+		    <artifactId>common</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- /common -->
 	</dependencies>
 
 	<dependencyManagement>
