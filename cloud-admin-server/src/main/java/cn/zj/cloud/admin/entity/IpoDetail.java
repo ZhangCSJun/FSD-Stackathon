@@ -1,29 +1,35 @@
 package cn.zj.cloud.admin.entity;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
+
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Table(name="ipodetails")
+@IdClass(IpoDetailPrimaryKey.class)
+@EqualsAndHashCode(callSuper = true)
 public class IpoDetail {
 	@Id
 	@Column(name="id")
 	private String id;
+	@Id
 	@Column(name="companyname")
 	private String companyName;
+	@Id
 	@Column(name="stockexchange")
 	private String stockExchange;	
 	@Column(name="pricepershare")
 	private BigDecimal pricePerShare;
 	@Column(name="totalnumberofshares")
 	private int totalNumberOfShares;
-	@Column(name="opendatatime")
-	private String openDataTime;
+	@Column(name="opendatetime")
+	private String openDatetime;
 	public String getId() {
 		return id;
 	}
@@ -54,11 +60,11 @@ public class IpoDetail {
 	public void setTotalNumberOfShares(int totalNumberOfShares) {
 		this.totalNumberOfShares = totalNumberOfShares;
 	}
-	public String getOpenDataTime() {
-		return openDataTime;
+	public String getOpenDateTime() {
+		return openDatetime;
 	}
-	public void setOpenDataTime(String openDataTime) {
-		this.openDataTime = openDataTime;
+	public void setOpenDateTime(String openDatetime) {
+		this.openDatetime = openDatetime;
 	}
 
 }

@@ -14,6 +14,10 @@ import cn.zj.cloud.admin.entity.Company;
 public interface CompanyRepository extends JpaRepository<Company, String>{
 	@Query(value="select * from company where name like concat(:companyname,'%')", nativeQuery=true)
 	List<Company> queryByCompanyName(String companyname);
+	
+	@Query(value="select * from company where code like concat(:keyword,'%') or name like concat(:keyword,'%')", nativeQuery=true)
+	List<Company> queryCompanyByKeyWord(String keyword);
+	
 
 	@Modifying
 	@Transactional

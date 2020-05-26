@@ -2,11 +2,9 @@ package cn.zj.cloud.admin.entity;
 
 import java.io.Serializable;
 
-import lombok.Data;
-
 public class StockPricePrimaryKey implements Serializable{
 
-	private static final long serialVersionUID = -7867564061357646284L;
+	private static final long serialVersionUID = 7308536514758563183L;
 	private String companycode;
 	private String stockcode;
 	private String stockexchange;	

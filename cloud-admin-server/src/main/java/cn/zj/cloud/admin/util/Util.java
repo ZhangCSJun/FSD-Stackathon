@@ -21,4 +21,12 @@ public class Util {
 		}
 		return date;
 	}
+	
+	public static boolean isNullOrEmpty(String str) {
+		boolean checkResult = false;
+		if(str == null || str.length() == 0) {
+			checkResult = true;
+		}
+		return checkResult;
+	}
 }

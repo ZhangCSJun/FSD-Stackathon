@@ -1,14 +1,19 @@
 package cn.zj.cloud.admin.service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.BeanUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import cn.zj.cloud.admin.entity.Company;
@@ -24,7 +29,12 @@ import cn.zj.cloud.admin.repository.SectorRepository;
 import cn.zj.cloud.admin.repository.StockExchangeRepository;
 import cn.zj.cloud.admin.repository.StockPriceRepository;
 import cn.zj.cloud.admin.util.Util;
-
+import cn.zj.cloud.constant.Constant;
+import cn.zj.cloud.enums.TableName;
+import cn.zj.cloud.model.Response;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 @Service
 public class AdminService {
@@ -47,49 +57,58 @@ public class AdminService {
 	 * @param user
 	 * @return
 	 */
-	public Map<String, String> login(String username, String password){
-		Map<String, String> result = new LinkedHashMap<String, String>();
+	public Response login(String username, String password){
+		Response response = new Response();
 		List<User> userList = adminRepository.queryUser(username, password);
 		if(userList.size() == 1) {
 			User user = (User)userList.get(0);
-			result.put("status", "1");
-			result.put("id", user.getId());
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.LOGIN_SUCESS);
+
+			Map<String, Object> business = new LinkedHashMap<String, Object>();
+			business.put(Constant.BUSINESS_DATA_ID, user.getId());
+			response.setBusiness(business);
+
 		} else {
-			result.put("status", "0");
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.LOGIN_FAIL);
 		}
-		return result;
+		return response;
 	}
-	
-	private String generateCompanyId() {
-		String companyId = "60000001";
-		List<Company> companyList = companyRepository.queryMaxId();
-		if(companyList.size()==1) {
-			String maxId = companyList.get(0).getId();
-			int nextId = Integer.valueOf(maxId) + 1;
-			companyId = String.valueOf(nextId);
-		}
-		return companyId;
-	}
-	
+
 	/**
-	 * Company Regist
+	 * Register basic infomation about company
 	 * @param company
 	 * @return
 	 */
-	public Map<String, String> registCompany(Company company) {
-		Map<String, String> result = new LinkedHashMap<String, String>();
-		// generate user id
-		String id = generateCompanyId();
+	public Response registCompany(Company company) {
+		Response response = new Response();
+		// generate id
+		String id = generateId(TableName.COMPANY);
 		company.setId(id);
 
-		Company newCompany = companyRepository.save(company);
-		String companyId = newCompany.getId();
-		if(!"".equals(companyId)) {
-			result.put("status", "1");
-		} else {
-			result.put("status", "0");
+		try {
+			Company newCompany = companyRepository.save(company);
+			String companyId = newCompany.getId();
+			if(!"".equals(companyId)) {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ONE);
+				response.setMessage(Constant.REGIST_SUCESS);
+
+			} else {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ZERO);
+				response.setMessage(Constant.REGIST_FAIL);
+			}
+		} catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(e.getMessage());
 		}
-		return result;
+
+		return response;
 	}
 	
 	/**
@@ -98,15 +117,21 @@ public class AdminService {
 	 * @param status String
 	 * @return
 	 */
-	public Map<String, String> updateCompanyStatus(String id, String status) {
-		Map<String, String> result = new LinkedHashMap<String, String>();
+	public Response updateCompanyStatus(String id, String status) {
+		Response response = new Response();
 		int updateRow = companyRepository.updateCompanyStatus(id, status);
+
 		if(updateRow == 1) {
-			result.put("status", "1");
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.UPDATE_STATUS_SUCESS);
+
 		} else {
-			result.put("status", "0");
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.UPDATE_STATUS_FAIL);
 		}
-		return result;
+		return response;
 	}
 	
 	
@@ -115,105 +140,120 @@ public class AdminService {
 	 * @param companyName String
 	 * @return
 	 */
-	public List<Map<String, String>> queryCompaniesInfo(){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
-		List<Company> companies = companyRepository.findAll();
-		
-		for(Company company: companies){
-			Map<String, String> companyMap = new LinkedHashMap<String, String>();
-			companyMap.put("id", company.getId());
-			companyMap.put("name", company.getName());
-			companyMap.put("code", company.getCode());
-			companyMap.put("ceo", company.getCeo());
-			companyMap.put("boardofdirectors", company.getBoardofdirectors());
-			companyMap.put("sectorid", company.getSectorid());
-			companyMap.put("turnover", company.getTurnover().toString());
-			companyMap.put("briefwriteup", company.getBriefwriteup());
-			companyMap.put("status", company.getStatus());
-			result.add(companyMap);
+	public Response queryCompaniesInfo(){
+		Response response = new Response();
+		List<Company> companies = companyRepository.findAll();;
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(companies.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(companies.size())));
+		} else {
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
-
-		return result;
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, companies);
+		response.setBusiness(business);
+		
+		return response;
 	}
 
+	
 	/**
-	 * Query Company Info By Company Name
+	 * Query company info by keyword
 	 * @param companyName String
 	 * @return
 	 */
-	public List<Map<String, String>> queryCompanyByCompanyName(String companyName){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
-		List<Company> companies = companyRepository.queryByCompanyName(companyName);
+	public Response queryCompanyByKeyWord(String kewWord){
+		Response response = new Response();
+		List<Company> companies = companyRepository.queryCompanyByKeyWord(kewWord);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(companies.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(companies.size())));
+		} else {
+			response.setMessage(Constant.QUERY_DATA_FAIL);
+		}
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, companies);
+		response.setBusiness(business);
 		
-		for(Company company: companies){
-			Map<String, String> companyMap = new LinkedHashMap<String, String>();
-			companyMap.put("id", company.getId());
-			companyMap.put("name", company.getName());
-			companyMap.put("code", company.getCode());
-			companyMap.put("ceo", company.getCeo());
-			companyMap.put("boardofdirectors", company.getBoardofdirectors());
-			companyMap.put("sectorid", company.getSectorid());
-			companyMap.put("turnover", company.getTurnover().toString());
-			companyMap.put("briefwriteup", company.getBriefwriteup());
-			companyMap.put("status", company.getStatus());
-			result.add(companyMap);
-		}
-
-		return result;
-	}
-	
-	private String generateIpoDetailId() {
-		String ipoDetailId = "80000001";
-		List<IpoDetail> ipoDetailList = ipodetailRepository.queryMaxId();
-		if(ipoDetailList.size()==1) {
-			String maxId = ipoDetailList.get(0).getId();
-			int nextId = Integer.valueOf(maxId) + 1;
-			ipoDetailId = String.valueOf(nextId);
-		}
-		return ipoDetailId;
+		return response;
 	}
 	
 	/**
-	 * IpoDetail Regist
-	 * @param company
+	 * Query company info by company name
+	 * @param companyName String
 	 * @return
 	 */
-	public Map<String, String> registIpoDetail(IpoDetail ipoDetail) {
-		Map<String, String> result = new LinkedHashMap<String, String>();
-		// generate id
-		String id = generateIpoDetailId();
-		ipoDetail.setId(id);
-
-		IpoDetail newIpoDetail = ipodetailRepository.save(ipoDetail);
-		String ipoDetailId = newIpoDetail.getId();
-		if(!"".equals(ipoDetailId)) {
-			result.put("status", "1");
+	public Response queryCompanyByCompanyName(String companyName){
+		Response response = new Response();
+		List<Company> companies = companyRepository.queryByCompanyName(companyName);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(companies.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(companies.size())));
 		} else {
-			result.put("status", "0");
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
-		return result;
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, companies);
+		response.setBusiness(business);
+		
+		return response;
+	}
+
+	/**
+	 * IpoDetail Regist
+	 * @param ipoDetail
+	 * @return
+	 */
+	public Response registIpoDetail(IpoDetail ipoDetail) {
+		Response response = new Response();
+		// generate id
+		String id = generateId(TableName.IPODETAIL);
+		ipoDetail.setId(id);
+		
+		try {
+			IpoDetail newIpoDetail = ipodetailRepository.save(ipoDetail);
+			String ipoDetailId = newIpoDetail.getId();
+			if(!"".equals(ipoDetailId)) {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ONE);
+				response.setMessage(Constant.REGIST_SUCESS);
+
+			} else {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ZERO);
+				response.setMessage(Constant.REGIST_FAIL);
+			}
+		} catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(e.getMessage());
+		}
+
+		return response;
 	}
 	
 	/**
 	 * Query IpoDetails
 	 * @return
 	 */
-	public List<Map<String, String>> queryIpoDetails(){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+	public Response queryIpoDetails(){
+		Response response = new Response();
 		List<IpoDetail> ipoDetails = ipodetailRepository.findAll();
-		
-		for(IpoDetail ipoDetail: ipoDetails){
-			Map<String, String> ipoMap = new LinkedHashMap<String, String>();
-			ipoMap.put("id", ipoDetail.getId());
-			ipoMap.put("company", ipoDetail.getCompanyName());
-			ipoMap.put("stockexchange", ipoDetail.getStockExchange());
-			ipoMap.put("pircepershare", ipoDetail.getPricePerShare().toString());
-			ipoMap.put("totalnumberofshares", String.valueOf(ipoDetail.getTotalNumberOfShares()));
-			ipoMap.put("opendatatime", ipoDetail.getOpenDataTime());
-			result.add(ipoMap);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(ipoDetails.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(ipoDetails.size())));
+		} else {
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, ipoDetails);
+		response.setBusiness(business);
 
-		return result;
+		return response;
 	}
 	
 	/**
@@ -221,34 +261,21 @@ public class AdminService {
 	 * @param companyName String
 	 * @return
 	 */
-	public List<Map<String, String>> queryIpoDetailsByCompanyName(String companyName){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+	public Response queryIpoDetailsByCompanyName(String companyName){
+		Response response = new Response();
 		List<IpoDetail> ipoDetails = ipodetailRepository.queryByCompanyName(companyName);
-		
-		for(IpoDetail ipoDetail: ipoDetails){
-			Map<String, String> ipoMap = new LinkedHashMap<String, String>();
-			ipoMap.put("id", ipoDetail.getId());
-			ipoMap.put("company", ipoDetail.getCompanyName());
-			ipoMap.put("stockexchange", ipoDetail.getStockExchange());
-			ipoMap.put("pircepershare", ipoDetail.getPricePerShare().toString());
-			ipoMap.put("totalnumberofshares", String.valueOf(ipoDetail.getTotalNumberOfShares()));
-			ipoMap.put("opendatatime", ipoDetail.getOpenDataTime());
-			result.add(ipoMap);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(ipoDetails.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(ipoDetails.size())));
+		} else {
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, ipoDetails);
+		response.setBusiness(business);
 
-		return result;
-	}
-	
-	
-	private String generateSectorId() {
-		String sectorId = "300001";
-		List<Sector> sectorList = sectorRepository.queryMaxId();
-		if(sectorList.size()==1) {
-			String maxId = sectorList.get(0).getId();
-			int nextId = Integer.valueOf(maxId) + 1;
-			sectorId = String.valueOf(nextId);
-		}
-		return sectorId;
+		return response;
 	}
 	
 	/**
@@ -256,20 +283,31 @@ public class AdminService {
 	 * @param sector
 	 * @return
 	 */
-	public Map<String, String> registSector(Sector sector) {
-		Map<String, String> result = new LinkedHashMap<String, String>();
+	public Response registSector(Sector sector) {
+		Response response = new Response();
 		// generate  id
-		String id = generateSectorId();
+		String id = generateId(TableName.SECTOR);
 		sector.setId(id);
+		
+		try {
+			Sector newSector = sectorRepository.save(sector);
+			String sectorId = newSector.getId();
+			if(!"".equals(sectorId)) {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ONE);
+				response.setMessage(Constant.REGIST_SUCESS);
 
-		Sector newSector = sectorRepository.save(sector);
-		String sectorId = newSector.getId();
-		if(!"".equals(sectorId)) {
-			result.put("status", "1");
-		} else {
-			result.put("status", "0");
+			} else {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ZERO);
+				response.setMessage(Constant.REGIST_FAIL);
+			}
+		} catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(e.getMessage());
 		}
-		return result;
+		return response;
 	}
 	
 	/**
@@ -277,19 +315,22 @@ public class AdminService {
 	 * @param companyName String
 	 * @return
 	 */
-	public List<Map<String, String>> querySector(){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+	public Response querySector(){
+		Response response = new Response();
 		List<Sector> sectors = sectorRepository.findAll();
 		
-		for(Sector sector: sectors){
-			Map<String, String> sectorMap = new LinkedHashMap<String, String>();
-			sectorMap.put("id", sector.getId());
-			sectorMap.put("sectorname", sector.getSectorname());
-			sectorMap.put("brief", sector.getBreif());
-			result.add(sectorMap);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(sectors.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(sectors.size())));
+		} else {
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, sectors);
+		response.setBusiness(business);
 
-		return result;
+		return response;
 	}
 	
 	/**
@@ -297,31 +338,21 @@ public class AdminService {
 	 * @param id String
 	 * @return
 	 */
-	public Map<String, String> querySectorById(String id){
-		Map<String, String> result = new LinkedHashMap<String, String>();
-		Optional<Sector> sector = sectorRepository.findById(id);
-		if(sector.isPresent()) {
-			result.put("status","1");
-			result.put("id", sector.get().getId());
-			result.put("sectorname", sector.get().getSectorname());
-			result.put("brief", sector.get().getBreif());
+	public Response querySectorById(String id){
+		Response response = new Response();
+		Optional<Sector> optinal = sectorRepository.findById(id);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(optinal.isPresent()) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", Constant.NUM_ONE));
+			Map<String, Object> business = new LinkedHashMap<String, Object>();
+			business.put(Constant.BUSINESS_DATA_DATA, optinal.get());
+			response.setBusiness(business);
 		} else {
-			result.put("status","0");
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
 
-		return result;
-	}
-	
-	
-	private String generateStockExchangeId() {
-		String stockExchangeId = "400001";
-		List<StockExchange> stockExchangeList = stockExchangeRepository.queryMaxId();
-		if(stockExchangeList.size()==1) {
-			String maxId = stockExchangeList.get(0).getId();
-			int nextId = Integer.valueOf(maxId) + 1;
-			stockExchangeId = String.valueOf(nextId);
-		}
-		return stockExchangeId;
+		return response;
 	}
 	
 	/**
@@ -329,42 +360,53 @@ public class AdminService {
 	 * @param stockExchange StockExchange
 	 * @return
 	 */
-	public Map<String, String> registStockExchange(StockExchange stockExchange) {
-		Map<String, String> result = new LinkedHashMap<String, String>();
+	public Response registStockExchange(StockExchange stockExchange) {
+		Response response = new Response();
 		// generate id
-		String id = generateStockExchangeId();
+		String id = generateId(TableName.STOCKEXCHANGE);
 		stockExchange.setId(id);
 
-		StockExchange newStockExchange = stockExchangeRepository.save(stockExchange);
-		String stockExchangeId = newStockExchange.getId();
-		if(!"".equals(stockExchangeId)) {
-			result.put("status", "1");
-		} else {
-			result.put("status", "0");
+		try {
+			StockExchange newStockExchange = stockExchangeRepository.save(stockExchange);
+			String stockExchangeId = newStockExchange.getId();
+			if(!"".equals(stockExchangeId)) {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ONE);
+				response.setMessage(Constant.REGIST_SUCESS);
+
+			} else {
+				response.setStatus(HttpStatus.OK.value());
+				response.setCode(Constant.CODE_ZERO);
+				response.setMessage(Constant.REGIST_FAIL);
+			}
+		} catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(e.getMessage());
 		}
-		return result;
+		return response;
 	}
 	
 	/**
 	 * Query All StockExchanges' Info
 	 * @return
 	 */
-	public List<Map<String, String>> queryStockExchange(){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+	public Response queryStockExchange(){
+		Response response = new Response();
 		List<StockExchange> stockExchangeList = stockExchangeRepository.findAll();
 		
-		for(StockExchange stockExchange: stockExchangeList){
-			Map<String, String> stockExchangeMap = new LinkedHashMap<String, String>();
-			stockExchangeMap.put("id", stockExchange.getId());
-			stockExchangeMap.put("abbrname", stockExchange.getAbbrname());
-			stockExchangeMap.put("fullname", stockExchange.getFullname());
-			stockExchangeMap.put("brief", stockExchange.getBrief());
-			stockExchangeMap.put("contactaddress", stockExchange.getContactaddress());
-			stockExchangeMap.put("remark", stockExchange.getRemark());
-			result.add(stockExchangeMap);
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		if(stockExchangeList.size()>0) {
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", String.valueOf(stockExchangeList.size())));
+		} else {
+			response.setMessage(Constant.QUERY_DATA_FAIL);
 		}
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, stockExchangeList);
+		response.setBusiness(business);
 
-		return result;
+		return response;
 	}
 	
 	/**
@@ -372,8 +414,20 @@ public class AdminService {
 	 * @param id String
 	 * @return
 	 */
-	public void deleteStockExchangeById(String id) {
-		stockExchangeRepository.deleteById(id);
+	public Response deleteStockExchangeById(String id) {
+		Response response = new Response();
+		try {
+			stockExchangeRepository.deleteById(id);
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.DELETE_DATA);
+		} catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(e.getMessage());
+		}
+		
+		return response;
 	}
 	
 	/**
@@ -381,23 +435,139 @@ public class AdminService {
 	 * @param stockPriceList List<StockPrice>
 	 * @return`
 	 */
-	public Map<String, String> uploadStockPrice(List<StockPrice> stockPriceList) {
-		Map<String, String> result = new LinkedHashMap<String, String>();
+	public Response uploadStockPrice(List<StockPrice> stockPriceList) {
+		Response response = new Response();
+
 		int uploadTotalNum = stockPriceList.size();
 		StringBuilder dateBuild = new StringBuilder();
 		// first one
 		StockPrice sp = stockPriceList.get(0);
 		String dateFrom = dateBuild.append(sp.getDate()).append(" ").append(sp.getTime()).toString();
 		// last one
+		dateBuild = new StringBuilder();
 		sp = stockPriceList.get(uploadTotalNum-1);
 		String dateTo = dateBuild.append(sp.getDate()).append(" ").append(sp.getTime()).toString();
 		
 		for(StockPrice stokPrice: stockPriceList) {
 			stockPriceRepository.save(stokPrice);
 		}
-		result.put("totalnum", String.valueOf(uploadTotalNum));
-		result.put("datefrom", dateFrom);
-		result.put("dateto", dateTo);
-		return result; 
+		response.setStatus(HttpStatus.OK.value());
+		response.setCode(Constant.CODE_ONE);
+		
+		Map<String, Object> dataContent = new LinkedHashMap<String, Object>();
+		dataContent.put("totalnum", String.valueOf(uploadTotalNum));
+		dataContent.put("datefrom", dateFrom);
+		dataContent.put("dateto", dateTo);
+
+		Map<String, Object> business = new LinkedHashMap<String, Object>();
+		business.put(Constant.BUSINESS_DATA_DATA, dataContent);
+		response.setBusiness(business);
+
+		return response; 
 	}
+	
+	private Map<String, Map<String, Object>> responseBody(Map<String, Object> commonData, Map<String, Object> business){
+		Map<String, Map<String, Object>> body = new LinkedHashMap<String, Map<String, Object>>();
+		body.put(Constant.COMMON_DATA, commonData);
+		if(business == null) {
+			body.put(Constant.BUSINESS_DATA, new LinkedHashMap<String, Object>());
+		}
+		body.put(Constant.BUSINESS_DATA, business);
+		return body;
+	}
+	
+	
+	/**
+	 * Generate table id
+	 * @param tablename TableName
+	 * @return`next id
+	 */
+	private String generateId(TableName tablename) {
+		String currentId = Constant.EMPTY_STRING;
+		String nextId = Constant.EMPTY_STRING;
+		List<?> queryList = null;
+		switch(tablename) {
+			case COMPANY:
+				queryList = companyRepository.queryMaxId();
+				if(queryList.size()==1) {
+					currentId = ((Company)queryList.get(0)).getId();
+				}else{
+					nextId = "C10000101";
+				};
+				break;
+			case IPODETAIL:
+				queryList = ipodetailRepository.queryMaxId();
+				if(queryList.size()==1) {
+					currentId = ((IpoDetail)queryList.get(0)).getId();
+				}else{
+					nextId = "I10000101";
+				};
+				break;
+			case SECTOR:
+				queryList = sectorRepository.queryMaxId();
+				if(queryList.size()==1) {
+					currentId = ((Sector)queryList.get(0)).getId();
+				}else{
+					nextId = "S10101";
+				};
+				break;
+			case STOCKEXCHANGE:
+				queryList = stockExchangeRepository.queryMaxId();
+				if(queryList.size()==1) {
+					currentId = ((StockExchange)queryList.get(0)).getId();
+				}else{
+					nextId = "X10101";
+				};
+				break;	
+			default:break;
+		}
+		
+		if(!Util.isNullOrEmpty(currentId)) {
+			StringBuilder prefix =new StringBuilder(currentId.substring(0, 1));
+			int id = Integer.valueOf(currentId.substring(1))+1;
+			nextId = prefix.append(String.valueOf(id)).toString();
+		}
+
+		return nextId;
+	}
+
+	
+    public List readExcel(File file) {
+        try {
+            // 创建输入流，读取Excel
+            InputStream is = new FileInputStream(file.getAbsolutePath());
+            // jxl提供的Workbook类
+            Workbook wb = Workbook.getWorkbook(is);
+            // Excel的页签数量
+            int sheet_size = wb.getNumberOfSheets();
+            for (int index = 0; index < sheet_size; index++) {
+                List<List> outerList=new ArrayList<List>();
+                // 每个页签创建一个Sheet对象
+                Sheet sheet = wb.getSheet(index);
+                // sheet.getRows()返回该页的总行数
+                for (int i = 0; i < sheet.getRows(); i++) {
+                    List innerList=new ArrayList();
+                    // sheet.getColumns()返回该页的总列数
+                    for (int j = 0; j < sheet.getColumns(); j++) {
+                        String cellinfo = sheet.getCell(j, i).getContents();
+                        if(cellinfo.isEmpty()){
+                            continue;
+                        }
+                        innerList.add(cellinfo);
+                        System.out.print(cellinfo);
+                    }
+                    outerList.add(i, innerList);
+                    System.out.println();
+                }
+                return outerList;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (BiffException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
