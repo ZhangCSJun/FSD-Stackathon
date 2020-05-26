@@ -16,6 +16,8 @@ eureka:
     registerWithEureka: true
 zuul:
   routes:
-    client: /myClient/**
+    cloud-admin-server: /admin/**
+    cloud-user-server: /**
   ignored-patterns:
-    -/client/**
+    -/cloud-admin-server/**
+    -/cloud-auth-server/**

@@ -29,11 +29,24 @@
 		    <artifactId>spring-cloud-starter-eureka</artifactId>
 		    <version>1.4.4.RELEASE</version>
 		</dependency>  
+		<dependency>  
+		    <groupId>org.springframework.cloud</groupId>  
+		    <artifactId>spring-cloud-starter-feign</artifactId>
+		    <version>1.4.4.RELEASE</version>
+		</dependency> 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- customize common -->
+		<dependency>
+		    <groupId>cloud-common</groupId>
+		    <artifactId>common</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- /common -->
 	</dependencies>
 
 	<dependencyManagement>
