@@ -1,0 +1,52 @@
+<div class="center-vertical">
+    <table class="table table-middle">
+        <thead>
+            <tr><th colspan="4" class="bg-info text-white text-center"><h3>Import Excel</h3></th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td clas="bg-light text-center"><span>Select Excel file to be uploaded</span></td>
+                <td>
+                    <input type="text" size="50" id='location' class="form-control" (click)="importExcel()">
+                    <form #form="ngForm" enctype="multipart/form-data">
+                        <input type="file" name="file" id='i-file' accept=".xls, .xlsx" (change)="doSelFile($event)" style="display: none">
+                    </form>
+                </td>
+                <td>
+                    <input type="button" id="browse" value="Browse Files" class="btn btn-primary" onclick="$('#i-file').click();">
+                </td>
+                <td>
+                    <input type="button" id="upload" value="Upload" class="btn btn-primary" onclick="$('#location').click();">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4"><a href="#" (click)="downloadTemplate()">Click here to dowload sample Excel file</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table div-upload table-middle">
+        <thead>
+            <tr><th colspan="4" class="bg-info text-white text-center"><h3>Summary of Upload</h3></th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-left td-width-weight">Company Name</td>
+                <td colspan="3">{{uploadResult.company}}</td>
+            </tr>
+            <tr>
+                <td class="text-left td-width-weight">Stock Exchange</td>
+                <td colspan="3">{{uploadResult.stockExchange}}</td>
+            </tr>
+            <tr>
+                <td class="text-left td-width-weight">No. of Records imported</td>
+                <td colspan="3">{{uploadResult.num}}</td>
+            </tr>
+            <tr>
+                <td class="td-width-weight">From Date</td>
+                <td>{{uploadResult.datefrom}}</td>
+                <td class="td-width-weight">To Date</td>
+                <td>{{uploadResult.dateto}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,50 @@
+<div class="center-vertical">
+    <table>
+        <tr>
+            <td>
+                <div class="input-group text-right">
+                    <input id="company" size="60" type="text" (keyup)="getCompanyNameList()" placeholder="input company's Name or company's code">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary dropdown-toggle" (click)="getCompanyInfo()">Search</button>
+                    </span>
+                </div>
+                <div id="companyList" class="dropDown-scroll" *ngIf="isDisplay">
+                    <a class="dropdown-item" *ngFor="let item of companyNameList" [attr.companyCode]="item.code" [attr.companyName]="item.name" (click)="selectCompany($event)">{{item.name}}</a>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div>
+        <h2 class="text-left">List of Companies</h2>
+    </div>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr class="bg-info text-light">
+                <th>Company Name</th>
+                <th>Stock Code</th>
+                <th>Stock Exchange</th>
+                <th>CEO</th>
+                <th>Board of Directors</th>
+                <th>Turnover</th>
+                <th>Sector</th>
+                <th>Brief Writeup</th>
+                <th>Status</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of companyInfo">
+                <td>{{item.name}}</td>
+                <td>{{item.stockCode}}</td>
+                <td>{{item.stockExchange}}</td>
+                <td>{{item.ceo}}</td>
+                <td>{{item.boardofdirectors}}</td>
+                <td>{{item.turnover}}</td>
+                <td>{{item.sectorid}}</td>
+                <td>{{item.briefwriteup}}</td>
+                <td>{{item.status}}</td>
+                <td><a class="btn btn-info" [routerLink]="['/admin/edit','1']" [queryParams]="item" routerLinkActive="router-link-active">update</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

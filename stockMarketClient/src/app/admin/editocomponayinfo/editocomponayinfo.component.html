@@ -1,0 +1,43 @@
+
+<div class="center-vertical">
+    <table class="table table-middle table-striped table-bordered bg-light">
+        <caption><h2>Company Profile</h2></caption>
+        <tbody>
+            <tr>
+                <td class="td-weight-half">Company Name</td>
+                <td><input class="form-control" type="text" [(ngModel)]='company.companyName'></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">Stock Code & Stock Exchange</td>
+                <td><input type="button" class="btn btn-info" value="Details" (click)="gotoDetails()"></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">CEO</td>
+                <td><input class="form-control" type="text" [(ngModel)]='company.ceo'></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">Board of Directors</td>
+                <td><input class="form-control" type="text" [(ngModel)]='company.bod'></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">Turn over</td>
+                <td><input class="form-control" type="text" [(ngModel)]='company.turnover'></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">Sector</td>
+                <td><input class="form-control" type="text" [(ngModel)]='company.sector'></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">Brief write Up</td>
+                <td><input class="form-control" type="text" [(ngModel)]='company.briefWriteUp'></td>
+            </tr>
+            <tr>
+                <td class="td-weight-half">Status</td>
+                <td type="text" id="brief">
+                    <label class="radio-inline"><input type="radio" class="radio" name="status" value="0">deactive</label>
+                    <label class="radio-inline"><input type="radio" class="radio" name="status" value="1">active</label>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

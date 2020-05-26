@@ -1,0 +1,54 @@
+<div class="center-vertical">
+    <table class="table table-striped table-middle">
+        <caption><h2>IPOS planned</h2></caption>
+        <tbody>
+            <tr>
+                <td class="td-width-weight">Company Name</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="iposDetail.companyName">
+                    <span class="text-danger" *ngIf="validMsg.company !==''">{{validMsg.company}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Stock Exchange</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="iposDetail.stockExchange">
+                    <span class="text-danger" *ngIf="validMsg.stkExchange !==''">{{validMsg.stkExchange}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Price Per shares</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="iposDetail.pricePerShare">
+                    <span class="text-danger" *ngIf="validMsg.price !==''">{{validMsg.price}}</span>
+                </td>
+                
+            </tr>
+            <tr>
+                <td>Total number of Shares</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="iposDetail.totalNumberOfShares">
+                    <span class="text-danger" *ngIf="validMsg.totalNum !==''">{{validMsg.totalNum}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Open Date Time</td>
+                <td>
+                    <input class="form-control" type="text" [(ngModel)]="iposDetail.openDateTime">
+                    <span class="text-danger" *ngIf="validMsg.openDateTime !==''">{{validMsg.openDateTime}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Remark</td>
+                <td><input class="form-control" type="text" [(ngModel)]="iposDetail.remark"></td>
+            </tr>
+            <tr class="bg-white text-light">
+                <td colspan="2" class="text-right">
+                    <a *ngIf="pageStatus=='0'" class="btn btn-info text-white" (click)="saveIPOSplan()">Save</a>
+                    &nbsp;&nbsp;
+                    <a class="btn btn-info" [routerLink]="['/admin/updateipos']" routerLinkActive="router-link-active">back</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
