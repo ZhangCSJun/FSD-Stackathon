@@ -2,9 +2,8 @@ import { CanActivate} from "@angular/router";
 
 export class AuthGuard implements CanActivate{
     canActivate(){
-        if(sessionStorage.getItem("token")=="OK"){
-            console.log("guard in");
-           return true;
+        if(localStorage.getItem("token")!='null' && localStorage.getItem("token")!=''){
+            return true;
         }else{
             return false;
         }
