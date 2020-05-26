@@ -2,19 +2,27 @@ package cn.zj.cloud.user.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import org.springframework.beans.BeanUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+
+import cn.zj.cloud.constant.Constant;
 import cn.zj.cloud.user.entity.IpoDetail;
 import cn.zj.cloud.user.entity.User;
-import cn.zj.cloud.user.model.LoginInfo;
+import cn.zj.cloud.model.Response;
 import cn.zj.cloud.user.repository.IpodetailRepository;
 import cn.zj.cloud.user.repository.UserRepository;
-import cn.zj.cloud.user.util.Util;
+import cn.zj.cloud.util.Email;
+import cn.zj.cloud.util.StringUtil;
+
 
 @Service
 public class UserService {
@@ -28,15 +36,53 @@ public class UserService {
 	 * @param user
 	 * @return
 	 */
-	public void regist(User user) {
+	public Response regist(User user) {
+		Response response = new Response();
+		// check whether the user name is existed
+//		if(isExistUser(user.getUserName())) {
+//			response.setStatus(HttpStatus.OK.value());
+//			response.setCode(Constant.CODE_ZERO);
+//			response.setMessage(Constant.REGIST_FAIL_USER_NAME_EXISTED);
+//			return response;
+//		}
+		
 		// generate user id
-		String id = "8888888";
+		String id = generateUserId();
 		user.setId(id);
-
-		User newUser = userRepository.save(user);
+		user.setUserType(Constant.NUM_ZERO);
+		// register user
+		User newUser = null;
+		try {
+			newUser = userRepository.save(user);
+			if (newUser == null) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				response.setCode(Constant.CODE_ZERO);
+				response.setMessage(Constant.INTERNAL_SERVER_ERROR);
+			}
+		} catch(DataIntegrityViolationException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.REGIST_FAIL_USER_NAME_EXISTED);
+		}
+		
+		
 		String userId = newUser.getId();
-		// TODO
-		// sendMail to user for confirm
+		String mailAddress = newUser.getEmail();
+		
+		if(!StringUtil.isNullOrEmpty(userId) && !StringUtil.isNullOrEmpty(mailAddress)) {
+			// if mailAddress and userId are not empty, send mail
+			Email mail = new Email();
+			mail.sendMail(mailAddress, userId);
+
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.REGIST_SUCESS);
+		} else {
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.REGIST_FAIL);
+		}
+		return response;
 	}
 	
 	/**
@@ -44,8 +90,19 @@ public class UserService {
 	 * @param id
 	 * @return
 	 */
-	public int activeUser(String id) {
-		return userRepository.activeUser(id);
+	public Response activeUser(String id) {
+		Response response = new Response();
+		int rowNum = userRepository.activeUser(id);
+		if(rowNum == 1) {
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.ACTIVE_SUCESS);
+		} else {
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.ACTIVE_FAIL);
+		}
+		return response;
 	}
 	
 	/**
@@ -53,18 +110,48 @@ public class UserService {
 	 * @param user
 	 * @return
 	 */
-	public Map<String, String> login(String username, String password){
-		Map<String, String> result = new HashMap<String, String>();
+	public Response login(String username, String password){
+		Response response = new Response();
 		List<User> userList = userRepository.queryUser(username, password);
 		if(userList.size() == 1) {
-			User user = (User)userList.get(0);
-			result.put("status", "1");
-			result.put("id", user.getId());
+			User user = userList.get(0);
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.LOGIN_SUCESS);
+			Map<String, Object> business = new LinkedHashMap<String, Object>();
+			business.put(Constant.BUSINESS_DATA_ID, user.getId());
+			business.put(Constant.BUSINESS_DATA_ROLE, user.getUserType());
+			response.setBusiness(business);
 		} else {
-			result.put("status", "0");
+			response.setStatus(HttpStatus.BAD_REQUEST.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.LOGIN_FAIL);
 		}
 
-		return result;
+		return response;
+	}
+	
+	/**
+	 * Query User Info By id
+	 * @param id
+	 * @return
+	 */
+	public Response queryUserById(String id) {
+		Response response = new Response();
+		Optional<User> userOptional = userRepository.findById(id);
+		if(userOptional.isPresent()) {
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", Constant.NUM_ONE));
+			Map<String, Object> business = new LinkedHashMap<String, Object>();
+			business.put(Constant.BUSINESS_DATA_DATA, userOptional.get());
+			response.setBusiness(business);
+		} else {
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.QUERY_DATA_SUCESS.replace("{0}", Constant.NUM_ZERO));
+		}
+		return response;
 	}
 	
 	/**
@@ -72,16 +159,20 @@ public class UserService {
 	 * @param user
 	 * @return
 	 */
-	public Map<String, String> updatePassword(String id, String oldpwd, String newpwd){
+	public Response updatePassword(String id, String oldpwd, String newpwd){
+		Response response = new Response();
 		int rowNum = userRepository.updatePassword(id, oldpwd, newpwd);
-		
-		Map<String, String> result = new HashMap<String, String>();
 		if(rowNum == 1) {
-			result.put("status", "1");
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ONE);
+			response.setMessage(Constant.UPDATE_PASSWORD_SUCESS);
 		} else {
-			result.put("status", "0");
+			response.setStatus(HttpStatus.OK.value());
+			response.setCode(Constant.CODE_ZERO);
+			response.setMessage(Constant.UPDATE_PASSWORD_FAIL);
 		}
-		return result;
+		return response;
+
 	}
 	
 	/**
@@ -99,7 +190,7 @@ public class UserService {
 			ipoMap.put("stockexchange", ipoDetail.getStockExchange());
 			ipoMap.put("pircepershare", ipoDetail.getPricePerShare().toString());
 			ipoMap.put("totalnumberofshares", String.valueOf(ipoDetail.getTotalNumberOfShares()));
-			ipoMap.put("opendatatime", Util.plainDate(ipoDetail.getOpenDataTime()));
+			ipoMap.put("opendatetime", StringUtil.plainDate(ipoDetail.getOpenDateTime()));
 			result.add(ipoMap);
 		}
 
@@ -122,10 +213,47 @@ public class UserService {
 			ipoMap.put("stockexchange", ipoDetail.getStockExchange());
 			ipoMap.put("pircepershare", ipoDetail.getPricePerShare().toString());
 			ipoMap.put("totalnumberofshares", String.valueOf(ipoDetail.getTotalNumberOfShares()));
-			ipoMap.put("opendatatime", Util.plainDate(ipoDetail.getOpenDataTime()));
+			ipoMap.put("opendatetime", StringUtil.plainDate(ipoDetail.getOpenDateTime()));
 			result.add(ipoMap);
 		}
 
 		return result;
+	}
+	
+	/**
+	 * Check whether the userName is existed
+	 * @param userName String
+	 * @return`check result
+	 */
+	private boolean isExistUser(String userName) {
+		boolean isExistFlg = false;
+		List<User> userList = userRepository.queryName(userName);
+		if(userList.size()>0) {
+			isExistFlg = true;
+		}
+		return isExistFlg;
+	}
+	
+	/**
+	 * Generate user id
+	 * @return`next id
+	 */
+	private String generateUserId() {
+		String currentId = Constant.EMPTY_STRING;
+		String nextId = Constant.EMPTY_STRING;
+		List<User> queryList = userRepository.queryMaxId();
+		if(queryList.size()==1) {
+			currentId = queryList.get(0).getId();
+		}else{
+			nextId = "U10000101";
+		};
+
+		if(!StringUtil.isNullOrEmpty(currentId)) {
+			StringBuilder prefix =new StringBuilder(currentId.substring(0, 1));
+			int id = Integer.valueOf(currentId.substring(1))+1;
+			nextId = prefix.append(String.valueOf(id)).toString();
+		}
+
+		return nextId;
 	}
 }

@@ -28,7 +28,12 @@ public interface UserRepository extends JpaRepository<User, String>{
 	
 	@Modifying
 	@Transactional
-	@Query(value="update users set password=:newpwd where id=:id and password=:oldpwd", nativeQuery=true)
+	@Query(value="update users set password=:newpwd where id=:id and password=:oldpwd and usertype='0'", nativeQuery=true)
 	public int updatePassword(String id, String oldpwd, String newpwd);
 
+	@Query(value="select * from users where usertype='0' order by id desc limit 1", nativeQuery=true)
+	List<User> queryMaxId();
+	
+	@Query(value="select * from users where username=:username", nativeQuery=true)
+	List<User> queryName(String username);
 }

@@ -7,84 +7,143 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
 
 import cn.zj.cloud.user.entity.User;
+
+import cn.zj.cloud.user.model.LoginRequest;
+import cn.zj.cloud.model.Response;
+import cn.zj.cloud.user.model.UpdateRequest;
 import cn.zj.cloud.user.service.UserService;
 
+
 @RestController
+//@CrossOrigin(origins="*", allowCredentials="true")
 public class UserController {
 	@Autowired
 	private UserService userService;
 	
-	
+	private String adminServiceBaseUrl="http://127.0.0.1:8099";
+
+	// User login
 	@PostMapping("/login")
-	public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String>requestBody){
-		String username = requestBody.get("username");
-		String password = requestBody.get("password");
-		Map<String, String> loginInfo = userService.login(username, password);
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(loginInfo);
+	public ResponseEntity<Response> login(@RequestBody LoginRequest request) {
+		String userName = request.getUsername();
+		String passWord = request.getPassword();
+		Response response = userService.login(userName, passWord);
+
+		return ResponseEntity.status(response.getStatus()).contentType(MediaType.APPLICATION_JSON).body(response);
 	}
-	
+
 	/**
 	 * User Regist
+	 * 
 	 * @param user User
 	 * @return
 	 */
 	@PostMapping("/user")
-	public ResponseEntity<String> register(@RequestBody User user) {
-
-		HttpStatus resStatus = HttpStatus.CREATED;
-		String resEntity = "";
-		try {
-			userService.regist(user);
-			resEntity = "Regist Sucessful";
-		} catch(Exception e) {
-			resStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-			resEntity = "Regist Fail";
-		}
-		return ResponseEntity.status(resStatus).body(resEntity);
+	public ResponseEntity<Response> register(@RequestBody User user) {
+		Response response = userService.regist(user);
+		return ResponseEntity.status(response.getStatus()).contentType(MediaType.APPLICATION_JSON).body(response);
 	}
+
+	/**
+	 * User Confirm
+	 * 
+	 * @param user User
+	 * @return
+	 */
+	@PutMapping("/user/{id}")
+	public ResponseEntity<Response> userConfirm(@PathVariable String id) {
+		Response response = userService.activeUser(id);
+		return ResponseEntity.status(response.getStatus()).contentType(MediaType.APPLICATION_JSON).body(response);
+	}
+
+	/**
+	 * Query User Info By id
+	 * 
+	 * @param id String
+	 * @return
+	 */
+	@GetMapping("/user/{id}")
+	public ResponseEntity<Response> queryUserById(@PathVariable String id) {
+		Response response = userService.queryUserById(id);
+		return ResponseEntity.status(response.getStatus()).contentType(MediaType.APPLICATION_JSON).body(response);
+	}
+	
 	
 	/**
 	 * Update User's password
+	 * 
 	 * @param requestBody Map<String, String>
 	 * @return
 	 */
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, String>> updatePassword(@RequestBody Map<String, String>requestBody) {
-		String id = requestBody.get("id");
-		String oldpwd = requestBody.get("oldpwd");
-		String newpwd = requestBody.get("newpwd");
-		
-		Map<String, String> resultMap = userService.updatePassword(id, oldpwd, newpwd);
-		return ResponseEntity.ok(resultMap);
+	public ResponseEntity<Response> updatePassword(@RequestBody UpdateRequest request) {
+		String id = request.getId();
+		String oldpwd = request.getOldPwd();
+		String newpwd = request.getNewPwd();
+
+		Response response = userService.updatePassword(id, oldpwd, newpwd);
+		return ResponseEntity.status(response.getStatus()).contentType(MediaType.APPLICATION_JSON).body(response);
 	}
 
 	/**
-	 * Query IpoDetails
+	 * Query company
+	 * 
 	 * @return
 	 */
-	@GetMapping("/ipodetails")
-	public ResponseEntity<List<Map<String, String>>> queryIpoDetails(){
-		List<Map<String, String>> resultList = userService.queryIpoDetails();
-		return ResponseEntity.ok(resultList);
+	@GetMapping("/company")
+	public ResponseEntity<Response> queryComapny() {
+		return proxy("/company");
 	}
 	
+	// Query all company info by specified kewword
+	@GetMapping("/company/ajax/{keyword}")
+	public ResponseEntity<Response> queryCompanyByKeyWord(@PathVariable String keyword) {
+		return proxy("/company/ajax/" + keyword);
+	}
+	
+	// Query all company info by specified company name
+	@GetMapping("/company/{companyName}")
+	public ResponseEntity<Response> queryCompanyByCompanyName(@PathVariable String companyName) {
+		return proxy("/company/" + companyName);
+	}
+
+	
+	/**
+	 * Query IpoDetails
+	 * 
+	 * @return
+	 */
+	@GetMapping("/ipodetail")
+	public ResponseEntity<Response> queryIpoDetails() {
+		return proxy("/ipodetail");
+	}
+
 	/**
 	 * Query IpoDetails By Company Name
+	 * 
 	 * @param companyName String
 	 * @return
 	 */
-	@GetMapping("/ipodetails/{companyName}")
-	public ResponseEntity<List<Map<String, String>>> queryIpoDetails(@PathVariable String companyName){
-		List<Map<String, String>> resultList = userService.queryIpoDetailsByCompanyName(companyName);
-		return ResponseEntity.ok(resultList);
+	@GetMapping("/ipodetail/{companyname}")
+	public ResponseEntity<Response> queryIpoDetails(@PathVariable String companyname) {
+		return proxy("/ipodetail/" + companyname);
+	}
+	
+	private ResponseEntity<Response> proxy(String uriPath){
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<Response> response = restTemplate.getForEntity(adminServiceBaseUrl + uriPath, Response.class);
+		return response;
 	}
 }

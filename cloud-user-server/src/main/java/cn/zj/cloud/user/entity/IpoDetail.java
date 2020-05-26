@@ -22,8 +22,8 @@ public class IpoDetail {
 	private BigDecimal pricePerShare;
 	@Column(name="totalnumberofshares")
 	private int totalNumberOfShares;
-	@Column(name="opendatatime")
-	private Timestamp openDataTime;
+	@Column(name="opendatetime")
+	private Timestamp openDateTime;
 	public String getId() {
 		return id;
 	}
@@ -54,11 +54,11 @@ public class IpoDetail {
 	public void setTotalNumberOfShares(int totalNumberOfShares) {
 		this.totalNumberOfShares = totalNumberOfShares;
 	}
-	public Timestamp getOpenDataTime() {
-		return openDataTime;
+	public Timestamp getOpenDateTime() {
+		return openDateTime;
 	}
-	public void setOpenDataTime(Timestamp openDataTime) {
-		this.openDataTime = openDataTime;
+	public void setOpenDateTime(Timestamp openDateTime) {
+		this.openDateTime = openDateTime;
 	}
 
 }
