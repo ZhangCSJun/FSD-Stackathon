@@ -25,18 +25,32 @@ export class LoginComponent implements OnInit {
   }
 
   login(formValue:any){
+    console.log(JSON.stringify(formValue));
+    // if form value check passed
     if(this.validInput(formValue)){
       this.reqService.doSignIn(formValue).subscribe((response:any)=>{
-        if(response.code == 200){
-          sessionStorage.setItem("token","OK");
-          if(response.role=="1"){
-            this.router.navigate(['admin/uploadxls']);
-          } else{
-            this.router.navigate(['user/profile']);
+        // if response status is 200(ok)
+        if(response.body.status == 200){
+          // if login successful
+          if(response.body.code == "001"){
+            // save token
+            console.log(response.headers.get('tkn'));
+            localStorage.setItem("token",response.headers.get('tkn'));
+            // go to home page by role
+            if(response.body.business.role=="1"){
+              this.router.navigate(['admin/uploadxls']);
+            } else { 
+              this.router.navigate(['user/profile'],{queryParams: {userId: response.body.business.id}});
+            }
+          } else {
+            this.validMsg.loginFail = "Incorrect username or password.";
           }
-        } else {
-          console.log(response.code);
-          this.validMsg.loginFail = "Incorrect username or password.";
+        } 
+      }, (errorResponse:any)=>{
+        // if response status is not 200(ok)
+        console.log(errorResponse);
+        if(errorResponse.status == 400){
+          this.validMsg.loginFail = errorResponse.error.message;
         }
       })
     }
@@ -52,7 +66,7 @@ export class LoginComponent implements OnInit {
       this.validMsg.username = "username can't be empty!"
       checkResult = false;
     };
-    if(!formValue.pwd){
+    if(!formValue.password){
       this.validMsg.password = "password can't be empty!"
       checkResult = false;
     };
